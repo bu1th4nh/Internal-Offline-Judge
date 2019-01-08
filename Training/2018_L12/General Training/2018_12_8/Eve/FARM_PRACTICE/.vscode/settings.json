@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "*.INP": "log",
+        "iostream": "cpp"
+    }
+}

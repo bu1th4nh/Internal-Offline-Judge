@@ -1,0 +1,18 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "C++: Compile",
+            "type": "shell",
+            "command": "g++ ${fileBasenameNoExtension}.cpp -o ${fileBasenameNoExtension} -Wall -std=c++14 -O2 -s -static -lm -x c++",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+  }
