@@ -277,12 +277,14 @@ void Dijkstras(int start)
         if(dist[u] + uv == dist[v]) add(res[i], (1LL * to[u] * from[v]) % mod);
     }
 
+    #ifndef THEMIS
     cout << el;
     FORl(i, 1, orders.size()) cout << orders[i] << sp; cout << el;
     cout << "From: "; FOR(i, 1, n) cout << from[i] << sp; cout << el;
     cout << "To:   "; FOR(i, 1, n) cout << to[i] << sp; cout << el;
     cout << "res:  "; for(ll x: res) print(x), pc(sp);
     cout << el;
+    #endif
 }
 
 //Process
