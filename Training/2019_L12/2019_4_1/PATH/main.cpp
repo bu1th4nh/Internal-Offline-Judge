@@ -160,22 +160,22 @@ const long long mod = 1000000007;
 //Typedefs
 typedef long long ll;
 typedef unsigned long long ull;
-typedef tuple<ll, ll, int, int> data;
 typedef tuple<ll, int, int> iii;
 typedef pair<ll, int> ii;
-typedef vector<data> vd;
 typedef vector<bool> vb;
 typedef vector<int> vi;
 typedef vector<ll> vll;
 typedef vector<ii> vii;
 typedef vector<vi> vvi;
 typedef vector<vb> vvb;
-typedef vector<iii> viii;
 typedef vector<vii> vvii;
-typedef vector<viii> vviii;
-vll cntPath, cntPassthru;
-vviii adj;
+typedef vector<iii> viii;
+vll dist, from, to, res;
+viii edgeList;
+vi orders;
+vvii adj;
 int n, m;
+
 
 //=====================================
 //Functions and procedures
@@ -210,8 +210,8 @@ void Enter()
     scan(n);
     scan(m);
 
-    adj = vviii(n+1);
-    cntPassthru = vll(m+1, 0LL);
+    adj = vvii(n+1);
+    res = vll(m, 0LL);
 
     FOR(i, 1, m)
     {
@@ -219,55 +219,81 @@ void Enter()
         scan(v);
         scan(w);
 
-        adj[u].eb(w, v, i);
+        adj[u].emplace_back(w, v);
+        edgeList.emplace_back(w, u, v);
     }
+    FOR(i, 1, n) sort(whole(adj[i]), [](ii x, ii y){return x.se < y.se;});
 }
 
 //Check
 void Dijkstras(int start)
 {
-    priority_queue<data, vd, greater<data>> pq;
-    vll dist(n+1, mod);
-    ll du, uv;
     int u, v;
+    ll du, uv;
+    priority_queue<ii, vii, greater<ii>> pq;
 
-
-    pq.emplace(dist[start] = 0, 0, start, 0);
-    cntPath = vll(m+1, 0LL);
-    cntPath[start] = 1;
-
+    orders = vi(1, 0);
+    dist = vll(n+1, mod);
+    from = to = vll(n+1, 0LL);
+    pq.emplace(dist[start] = 0LL, start);
+    to[start] = 1;
 
     while(!pq.empty())
     {
-        tie(du, ignore, u, ignore) = pq.top(); pq.pop();
-        if(du != dist[u]) continue;
+        du = pq.top().first;
+        u = pq.top().second;
+        pq.pop();
 
-        for(iii p: adj[u])
+        if(du != dist[u]) continue;
+        orders.emplace_back(u);
+
+        for(ii p: adj[u])
         {
-            tie(uv, v, ignore) = p;
+            v = p.second;
+            uv = p.first;
             if(du + uv < dist[v])
             {
-                cntPath[v] = cntPath[u];
-                pq.emplace(dist[v] = du + uv, 0, v, 0);
+                to[v] = to[u];
+                pq.emplace(dist[v] = du + uv, v);
             }
-            else if(du + uv == dist[v]) add(cntPath[v], cntPath[u]);
+            else if(du + uv == dist[v]) add(to[v], to[u]);
         }
     }
 
-    FOR(i, 1, n) cerr << cntPath[i] << sp; cerr << el;
+    FORb(i, int(orders.size())-1, 1)
+    {
+        u = orders[i];
+        from[u] = 1LL;
+        for(ii x: adj[u]) if(dist[u] + x.fi == dist[x.se])
+        {
+            add(from[u], from[x.se]);
+        }
+    }
+
+
+    FORl(i, 0, m)
+    {
+        tie(uv, u, v) = edgeList[i];
+        if(dist[u] + uv == dist[v]) add(res[i], (1LL * to[u] * from[v]) % mod);
+    }
+
+    cout << el;
+    FORl(i, 1, orders.size()) cout << orders[i] << sp; cout << el;
+    cout << "From: "; FOR(i, 1, n) cout << from[i] << sp; cout << el;
+    cout << "To:   "; FOR(i, 1, n) cout << to[i] << sp; cout << el;
+    cout << "res:  "; for(ll x: res) print(x), pc(sp);
+    cout << el;
 }
 
-
 //Process
-
-
-
-
-
-//Output
-
-
-
+void Solve()
+{
+    FOR(i, 1, n)
+    {
+        Dijkstras(i);
+    }
+    for(ll x: res) print(x), pc(el);
+}
 
 
 //Main Procedure
@@ -275,7 +301,7 @@ int main()
 {
     FileInit();
     Enter();
-    FOR(i, 1, n) Dijkstras(i);
+    Solve();
     return 0;
 }
 

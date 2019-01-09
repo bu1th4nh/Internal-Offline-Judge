@@ -51,11 +51,12 @@ using namespace std;
 //Macroes
 #define sp ' '
 #define el '\n'
-#define task ""
+#define task "PATHS"
 #define maxinp ()
 #define fi first
 #define se second
 #define pb push_back
+#define eb emplace_back
 #define whole(x) x.begin(),x.end()
 #define whole_1(x) x.begin()+1,x.end()
 #define r_whole(x) x.rbegin(),x.rend()
@@ -116,6 +117,10 @@ using namespace std;
     {
         return (__X < 0) ? -__X : __X;
     }
+    template<class T> T __sqr(T __X)
+    {
+        return __X * __X;
+    }
 #endif
 //Fast I/O
 template<class T> inline void scan(T &__ret)
@@ -148,23 +153,27 @@ template<class T> void print(T __X)
 
 //=====================================
 //Constants
-
+const long long mod = 1000000007;
 
 
 //=====================================
 //Typedefs
 typedef long long ll;
 typedef unsigned long long ull;
-typedef pair<int, int> ii;
+typedef pair<ll, int> ii;
 typedef vector<bool> vb;
 typedef vector<int> vi;
+typedef vector<ll> vll;
 typedef vector<ii> vii;
 typedef vector<vi> vvi;
 typedef vector<vb> vvb;
 typedef vector<vii> vvii;
-int n, m, nTest;
-vi dp, tx;
-vi a, b;
+vll dist, from, to, res;
+vii edgeList;
+vi orders;
+vvii adj;
+int n, m;
+
 
 //=====================================
 //Functions and procedures
@@ -178,64 +187,113 @@ void FileDebug()
     #ifdef DEBUG
         FILEOP_DEBUG()
     #else
-        FILEOP()   #endif
+        FILEOP()
+    #endif
 }
 void FileClose()
 {
     fclose(stdin);
     fclose(stdout);
 }
+template<class T> void add(T &__X, T __Y)
+{
+    __X = (__X + __Y) % mod;
+}
 
 
 //Enter
 void Enter()
 {
-    scan(m);
+    int u, v, w;
     scan(n);
-    a = vi(m+1, 0);
-    b = vi(n+1, 0);
-    tx = vi(m+1, 0);
-    dp = vi(n+1, 0);
+    scan(m);
 
-    FOR(i, 1, m) scan(a[i]);
-    FOR(i, 1, n) scan(b[i]);
-};
+    adj = vvii(n+1);
+    res = vll(m, 0LL);
+
+    FOR(i, 1, m)
+    {
+        scan(u);
+        scan(v);
+        scan(w);
+
+        adj[u].emplace_back(w, v);
+        edgeList.emplace_back(u, v);
+    }
+}
 
 //Check
+void Dijkstras(int start)
+{
+    int u, v;
+    ll du, uv;
+    priority_queue<ii, vii, greater<ii>> pq;
+
+    orders = vi(1, 0);
+    dist = vll(n+1, mod);
+    from = to = vll(n+1, 0LL);
+    pq.emplace(dist[start] = 0LL, start);
+    to[start] = 1;
+
+    while(!pq.empty())
+    {
+        du = pq.top().first;
+        u = pq.top().second;
+        pq.pop();
+
+        if(du != dist[u]) continue;
+        orders.emplace_back(u);
+
+        for(ii p: adj[u])
+        {
+            v = p.second;
+            uv = p.first;
+            if(du + uv < dist[v])
+            {
+                to[v] = to[u];
+                pq.emplace(dist[v] = du + uv, v);
+            }
+            else if(du + uv == dist[v]) add(to[v], to[u]);
+        }
+    }
+
+    FORb(i, int(orders.size())-1, 1)
+    {
+        u = orders[i];
+        from[u] = 1LL;
+
+        for(ii x: adj[u]) if(dist[u] + x.fi == dist[x.se])
+        {
+            add(from[u], from[x.se]);
+        }
+    }
+    FORl(i, 0, m)
+    {
+        u = edgeList[i].fi, v = edgeList[i].se;
+        add(res[i], (1LL * to[u] * from[v]) % mod);
+    }
+
+}
+
+//Process
 void Solve()
 {
-    int res = 0;
-    FOR(i, 1, m) FOR(j, 1, n)
+    FOR(i, 1, n)
     {
-        int tmp = tx[i];
-        if(b[j] * 2 <= a[i]) maximize(tx[i], dp[j]);
-        if(b[j] == a[i]) dp[j] = tmp + 1, maximize(res, dp[j]);
+        Dijkstras(i);
     }
-    print(res); pc(el);
+    for(ll x: res) print(x), pc(el);
 }
-void MULTi()
-{
-    scan(nTest);
-    while(nTest--)
-    {
-        Enter();
-        Solve();
-    }
-}
+
 
 //Main Procedure
 int main()
 {
-    MULTi();
+    FileInit();
+    Enter();
+    Solve();
     return 0;
 }
-
-/*
-1
-5 5
-5 1 6 10 20
-1 8 6 10 20
-*/
 
 //=============================================================================//
 /**    CTB, you are always in my heart and in my code <3       #30yearsCTB    **/

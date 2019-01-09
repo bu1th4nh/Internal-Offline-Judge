@@ -7,9 +7,16 @@
 \*==========================================================================================*/
 //=====================================
 //Solution Briefing - Foreword
+/*
+        dp[a, b]: Số địa điểm min cần đi qua để tồn tại hành trình 1->a->b->1, (a/b tùy ý)
 
+        Minimize(dp[x, y], dp[a, b] + dist[b, x] + dist[x, y] + dist[y, a] - 1);
 
-
+            1 <--------- y -------> A
+            |            A          |
+            |            |          V
+            \----------> x <------- B
+*/
 //=====================================
 //Libraries and namespaces
 //#include <bits/stdc++.h>
@@ -51,7 +58,7 @@ using namespace std;
 //Macroes
 #define sp ' '
 #define el '\n'
-#define task ""
+#define task "LITTLE"
 #define maxinp ()
 #define fi first
 #define se second
@@ -148,13 +155,14 @@ template<class T> void print(T __X)
 
 //=====================================
 //Constants
-
+const int inf = 1000000007;
 
 
 //=====================================
 //Typedefs
 typedef long long ll;
 typedef unsigned long long ull;
+typedef tuple<int, int, int> iii;
 typedef pair<int, int> ii;
 typedef vector<bool> vb;
 typedef vector<int> vi;
@@ -162,9 +170,10 @@ typedef vector<ii> vii;
 typedef vector<vi> vvi;
 typedef vector<vb> vvb;
 typedef vector<vii> vvii;
-int n, m, nTest;
-vi dp, tx;
-vi a, b;
+typedef vector<iii> viii;
+vvi dist, dp;
+vvb done;
+int n, m;
 
 //=====================================
 //Functions and procedures
@@ -178,7 +187,8 @@ void FileDebug()
     #ifdef DEBUG
         FILEOP_DEBUG()
     #else
-        FILEOP()   #endif
+        FILEOP()
+    #endif
 }
 void FileClose()
 {
@@ -190,52 +200,74 @@ void FileClose()
 //Enter
 void Enter()
 {
-    scan(m);
-    scan(n);
-    a = vi(m+1, 0);
-    b = vi(n+1, 0);
-    tx = vi(m+1, 0);
-    dp = vi(n+1, 0);
+    int u, v;
 
-    FOR(i, 1, m) scan(a[i]);
-    FOR(i, 1, n) scan(b[i]);
-};
+    scan(n);
+    scan(m);
+    dist = dp = vvi(n+1, vi(n+1, inf));
+
+    FOR(i, 1, m)
+    {
+        scan(u);
+        scan(v);
+        dist[u][v] = 1;
+    }
+}
 
 //Check
+void Floyd()
+{
+    FOR(k, 1, n) dist[k][k] = 0;
+    FOR(k, 1, n)
+    {
+        FOR(i, 1, n)
+        {
+            FOR(j, 1, n)
+            {
+                minimize(dist[i][j], dist[i][k] + dist[k][j]);
+            }
+        }
+    }
+}
+
+//Process
 void Solve()
 {
-    int res = 0;
-    FOR(i, 1, m) FOR(j, 1, n)
+    int a, b, dab;
+
+    priority_queue<iii, viii, greater<iii>> pq;
+    pq.emplace(dp[2][2] = 1, 2, 2);
+    while(!pq.empty())
     {
-        int tmp = tx[i];
-        if(b[j] * 2 <= a[i]) maximize(tx[i], dp[j]);
-        if(b[j] == a[i]) dp[j] = tmp + 1, maximize(res, dp[j]);
+        tie(dab, a, b) = pq.top(); pq.pop();
+
+        if(dp[a][b] != dab) continue;
+        if(a == 1 && b == 1) break;
+
+        FOR(i, 1, n) FOR(j, 1, n)
+        {
+            if(i == a || i == b || j == a || j == b) continue;
+            if(dp[i][j] > dp[a][b] + dist[b][i] + dist[i][j] + dist[j][a] - 1)
+            {
+                dp[i][j] = dp[a][b] + dist[b][i] + dist[i][j] + dist[j][a] - 1;
+                pq.emplace(dp[i][j], i, j);
+            }
+        }
     }
-    print(res); pc(el);
+
+    print(dp[1][1]);
 }
-void MULTi()
-{
-    scan(nTest);
-    while(nTest--)
-    {
-        Enter();
-        Solve();
-    }
-}
+
 
 //Main Procedure
 int main()
 {
-    MULTi();
+    FileInit();
+    Enter();
+    Floyd();
+    Solve();
     return 0;
 }
-
-/*
-1
-5 5
-5 1 6 10 20
-1 8 6 10 20
-*/
 
 //=============================================================================//
 /**    CTB, you are always in my heart and in my code <3       #30yearsCTB    **/

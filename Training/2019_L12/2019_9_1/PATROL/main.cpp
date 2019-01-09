@@ -51,7 +51,7 @@ using namespace std;
 //Macroes
 #define sp ' '
 #define el '\n'
-#define task ""
+#define task "PATROL"
 #define maxinp ()
 #define fi first
 #define se second
@@ -162,9 +162,9 @@ typedef vector<ii> vii;
 typedef vector<vi> vvi;
 typedef vector<vb> vvb;
 typedef vector<vii> vvii;
-int n, m, nTest;
-vi dp, tx;
-vi a, b;
+vi dist;
+vvi adj;
+int n;
 
 //=====================================
 //Functions and procedures
@@ -178,7 +178,8 @@ void FileDebug()
     #ifdef DEBUG
         FILEOP_DEBUG()
     #else
-        FILEOP()   #endif
+        FILEOP()
+    #endif
 }
 void FileClose()
 {
@@ -190,52 +191,54 @@ void FileClose()
 //Enter
 void Enter()
 {
-    scan(m);
-    scan(n);
-    a = vi(m+1, 0);
-    b = vi(n+1, 0);
-    tx = vi(m+1, 0);
-    dp = vi(n+1, 0);
+    int u, v;
 
-    FOR(i, 1, m) scan(a[i]);
-    FOR(i, 1, n) scan(b[i]);
-};
+    scan(n);
+    adj = vvi(n+1);
+    dist = vi(n+1, 0);
+
+    FORl(i, 1, n)
+    {
+        scan(u);
+        scan(v);
+
+        adj[u].pb(v);
+        adj[v].pb(u);
+    }
+}
 
 //Check
+void DFS(int u, int p)
+{
+    for(int v: adj[u]) if(v != p)
+    {
+        dist[v] = dist[u] + 1;
+        DFS(v, u);
+    }
+}
+
+//Process
 void Solve()
 {
-    int res = 0;
-    FOR(i, 1, m) FOR(j, 1, n)
-    {
-        int tmp = tx[i];
-        if(b[j] * 2 <= a[i]) maximize(tx[i], dp[j]);
-        if(b[j] == a[i]) dp[j] = tmp + 1, maximize(res, dp[j]);
-    }
-    print(res); pc(el);
+    dist[1] = 0;
+    DFS(1, -1);
+    int ds1 = max_element(whole_1(dist)) - dist.begin();
+    dist = vi(n+1, 0);
+    DFS(ds1, -1);
+    int ds2 = *max_element(whole_1(dist));
+
+    cout << (ds2 + 1) + 2 * (n - (ds2 + 1));
 }
-void MULTi()
-{
-    scan(nTest);
-    while(nTest--)
-    {
-        Enter();
-        Solve();
-    }
-}
+
 
 //Main Procedure
 int main()
 {
-    MULTi();
+    FileInit();
+    Enter();
+    Solve();
     return 0;
 }
-
-/*
-1
-5 5
-5 1 6 10 20
-1 8 6 10 20
-*/
 
 //=============================================================================//
 /**    CTB, you are always in my heart and in my code <3       #30yearsCTB    **/

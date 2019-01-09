@@ -51,7 +51,7 @@ using namespace std;
 //Macroes
 #define sp ' '
 #define el '\n'
-#define task ""
+#define task "TOURIST"
 #define maxinp ()
 #define fi first
 #define se second
@@ -158,13 +158,17 @@ typedef unsigned long long ull;
 typedef pair<int, int> ii;
 typedef vector<bool> vb;
 typedef vector<int> vi;
+typedef vector<ll> vll;
 typedef vector<ii> vii;
 typedef vector<vi> vvi;
 typedef vector<vb> vvb;
 typedef vector<vii> vvii;
-int n, m, nTest;
-vi dp, tx;
-vi a, b;
+vii edgeList;
+vvi adj, dp;
+int n, m;
+vll happ;
+ll res1;
+vi res2;
 
 //=====================================
 //Functions and procedures
@@ -178,7 +182,8 @@ void FileDebug()
     #ifdef DEBUG
         FILEOP_DEBUG()
     #else
-        FILEOP()   #endif
+        FILEOP()
+    #endif
 }
 void FileClose()
 {
@@ -190,52 +195,105 @@ void FileClose()
 //Enter
 void Enter()
 {
-    scan(m);
-    scan(n);
-    a = vi(m+1, 0);
-    b = vi(n+1, 0);
-    tx = vi(m+1, 0);
-    dp = vi(n+1, 0);
+    int u, v;
+	scan(n);
+	scan(m);
 
-    FOR(i, 1, m) scan(a[i]);
-    FOR(i, 1, n) scan(b[i]);
-};
+	res1 = 0LL;
+	adj = vvi(n+1);
+	happ = vll(n+1, 0LL);
+	dp = vvi(n+1, vi(3, 0));
 
-//Check
+	FOR(i, 1, n)
+	{
+	    scan(happ[i]);
+	    if(res1 < happ[i]) res1 = happ[i], res2 = {i};
+	}
+	FOR(i, 1, m)
+	{
+	    scan(u);
+	    scan(v);
+	    adj[u].pb(v);
+	    adj[v].pb(u);
+
+	    edgeList.emplace_back(u, v);
+	    if(res1 < happ[u] + happ[v]) res1 = happ[u] + happ[v], res2 = {u, v};
+	}
+}
+
+//Process
 void Solve()
 {
-    int res = 0;
-    FOR(i, 1, m) FOR(j, 1, n)
+    FOR(i, 1, n) for(int v: adj[i])
     {
-        int tmp = tx[i];
-        if(b[j] * 2 <= a[i]) maximize(tx[i], dp[j]);
-        if(b[j] == a[i]) dp[j] = tmp + 1, maximize(res, dp[j]);
+        if(happ[dp[i][0]] < happ[v])
+        {
+            dp[i][2] = dp[i][1];
+            dp[i][1] = dp[i][0];
+            dp[i][0] = v;
+        }
+        else if(happ[dp[i][1]] < happ[v])
+        {
+            dp[i][2] = dp[i][1];
+            dp[i][1] = v;
+        }
+        else if(happ[dp[i][2]] < happ[v]) dp[i][2] = v;
     }
-    print(res); pc(el);
-}
-void MULTi()
-{
-    scan(nTest);
-    while(nTest--)
+
+//    FOR(j, 0, 2)
+//    {
+//        FOR(i, 1, n) cerr << dp[i][j] << sp;cerr << el;
+//    }
+
+
+    FOR(i, 1, n) if(dp[i][0] > 0 && dp[i][1] > 0)
     {
-        Enter();
-        Solve();
+        if(res1 < happ[dp[i][0]] + happ[dp[i][1]] + happ[i] && dp[i][0] != dp[i][1])
+        {
+            res1 = happ[dp[i][0]] + happ[dp[i][1]] + happ[i];
+            res2 = {dp[i][0], i, dp[i][1]};
+
+
+            //cerr << res1 << sp; for(int x: res2) cerr << x << sp; cerr << el;
+        }
     }
+
+    FORl(i, 0, m)
+    {
+        int u = edgeList[i].fi;
+        int v = edgeList[i].se;
+
+        for(int x: dp[u]) if(x > 0 && x != u && x != v)
+        {
+            for(int y: dp[v]) if(y > 0 && y != x && y != u && y != v)
+            {
+                if(happ[x] + happ[y] + happ[u] + happ[v] > res1)
+                {
+                    res1 = happ[x] + happ[y] + happ[u] + happ[v];
+                    res2 = {x, u, v, y};
+
+
+                    //cerr << res1 << sp; for(int x: res2) cerr << x << sp; cerr << el;
+                }
+            }
+        }
+    }
+
+
+    print(res2.size()); pc(el);
+    for(int x: res2) print(x), pc(sp);
+
 }
+
 
 //Main Procedure
 int main()
 {
-    MULTi();
+    FileInit();
+    Enter();
+    Solve();
     return 0;
 }
-
-/*
-1
-5 5
-5 1 6 10 20
-1 8 6 10 20
-*/
 
 //=============================================================================//
 /**    CTB, you are always in my heart and in my code <3       #30yearsCTB    **/
