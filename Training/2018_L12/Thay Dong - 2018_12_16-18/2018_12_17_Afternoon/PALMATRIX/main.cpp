@@ -51,7 +51,7 @@ using namespace std;
 //Macroes
 #define sp ' '
 #define el '\n'
-#define task ""
+#define task "PALMATRIX"
 #define maxinp ()
 #define fi first
 #define se second
@@ -162,7 +162,8 @@ typedef vector<ii> vii;
 typedef vector<vi> vvi;
 typedef vector<vb> vvb;
 typedef vector<vii> vvii;
-int m, n, k;
+vi col, row, cnt, chg;
+int m, n, k, res;
 vs a;
 
 
@@ -192,12 +193,15 @@ void FileClose()
 void Enter()
 {
     char str[101010];
-    scan(n);
     scan(m);
+    scan(n);
     scan(k);
 
-
     a = vs(m+1);
+    row = vi(m+1, 0);
+    col = vi(n+1, 0);
+    cnt = vi(311, 0);
+
     FOR(i, 1, m)
     {
         scanf("%s", &str);
@@ -217,23 +221,62 @@ void Subtask1()
 }
 
 
-//Process
+//Subtask 2
+void Subtask2()
+{
+    //We must resize the array to maximum value of m/n
+    while(row.size() < max(m, n)+30) row.push_back(0);
+    while(col.size() < max(m, n)+30) col.push_back(0);
+    for(int p1 = 1, p2 = n; p1 < p2; ++p1, --p2)
+    {
+        FOR(i, 1, m) if(a[i][p1] != a[i][p2])
+        {
+            ++col[p1];
+        }
+        res += col[p1];
+    }
+
+    for(int i1 = 1, i2 = n; i1 < i2; ++i1, --i2)
+    for(int j1 = 1, j2 = m; j1 < j2; ++j1, --j2)
+    {
+        cnt = vi(311, 0);
+        ++cnt[a[j1][i1]];
+        ++cnt[a[j1][i2]];
+        ++cnt[a[j2][i1]];
+        ++cnt[a[j2][i2]];
+
+        int mx = *max_element(whole(cnt));
+        row[i1] += 4 - mx;
+    }
 
 
+
+
+    chg.push_back(0);
+    FOR(i, 1, n/2) chg.push_back(row[i] - col[i]);
+    sort(whole_1(chg));
+
+    while(cnt.size() < max(m, n)+30) cnt.push_back(0);
+    FOR(i, 1, (k+1)/2) res += max(0, chg[i]);
+    cout << res;
+}
 
 
 
 //Output
-
-
+void Solve()
+{
+    Subtask2();
+}
 
 
 
 //Main Procedure
 int main()
 {
+    FileInit();
     Enter();
-    Subtask1();
+    Solve();
     return 0;
 }
 

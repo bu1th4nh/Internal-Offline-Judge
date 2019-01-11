@@ -51,12 +51,11 @@ using namespace std;
 //Macroes
 #define sp ' '
 #define el '\n'
-#define task "PATHS"
+#define task "WGAME"
 #define maxinp ()
 #define fi first
 #define se second
 #define pb push_back
-#define eb emplace_back
 #define whole(x) x.begin(),x.end()
 #define whole_1(x) x.begin()+1,x.end()
 #define r_whole(x) x.rbegin(),x.rend()
@@ -119,7 +118,7 @@ using namespace std;
     }
     template<class T> T __sqr(T __X)
     {
-        return __X * __X;
+        return T(1) * __X * __X;
     }
 #endif
 //Fast I/O
@@ -153,29 +152,31 @@ template<class T> void print(T __X)
 
 //=====================================
 //Constants
-const long long mod = 1000000007;
+
 
 
 //=====================================
 //Typedefs
 typedef long long ll;
 typedef unsigned long long ull;
-typedef tuple<ll, int, int> iii;
-typedef pair<ll, int> ii;
+typedef pair<int, int> ii;
+typedef vector<string> vs;
 typedef vector<bool> vb;
-typedef vector<int> vi;
-typedef vector<ll> vll;
+typedef vector<ll> vi;
 typedef vector<ii> vii;
 typedef vector<vi> vvi;
+typedef vector<vs> vvs;
 typedef vector<vb> vvb;
+typedef vector<vvs> vs3d;
+typedef vector<vvi> vi3d;
 typedef vector<vii> vvii;
-typedef vector<iii> viii;
-vll dist, from, to, res;
-viii edgeList;
-vi orders;
-vvii adj;
+typedef vector<vi3d> vi4d;
+string src;
 int n, m;
-
+vi4d dp;
+vs3d ok;
+ll mod;
+vs a;
 
 //=====================================
 //Functions and procedures
@@ -197,105 +198,114 @@ void FileClose()
     fclose(stdin);
     fclose(stdout);
 }
-template<class T> void add(T &__X, T __Y)
-{
-    __X = (__X + __Y) % mod;
-}
 
 
 //Enter
 void Enter()
 {
-    int u, v, w;
-    scan(n);
+    char str[2019];
     scan(m);
+    scan(n);
+    scan(mod);
+    scanf("%s", &str);
 
-    adj = vvii(n+1);
-    res = vll(m, 0LL);
+    src = string(str);
+    dp = vi4d(32, vi3d(32, vvi(32, vi(32, -1))));
+    ok = vs3d(m+1, vvs(n+1));
+    a = vs(m+1);
 
     FOR(i, 1, m)
     {
-        scan(u);
-        scan(v);
-        scan(w);
-
-        adj[u].emplace_back(w, v);
-        edgeList.emplace_back(w, u, v);
+        scanf("%s", &str);
+        a[i] = '$' + string(str);
     }
-    FOR(i, 1, n) sort(whole(adj[i]), [](ii x, ii y){return x.se < y.se;});
 }
 
 //Check
-void Dijkstras(int start)
+bool Verify(string s, string t)
 {
-    int u, v;
-    ll du, uv;
-    priority_queue<ii, vii, greater<ii>> pq;
-
-    orders = vi(1, 0);
-    dist = vll(n+1, mod);
-    from = to = vll(n+1, 0LL);
-    pq.emplace(dist[start] = 0LL, start);
-    to[start] = 1;
-
-    while(!pq.empty())
-    {
-        du = pq.top().first;
-        u = pq.top().second;
-        pq.pop();
-
-        if(du != dist[u]) continue;
-        orders.emplace_back(u);
-
-        for(ii p: adj[u])
-        {
-            v = p.second;
-            uv = p.first;
-            if(du + uv < dist[v])
-            {
-                to[v] = to[u];
-                pq.emplace(dist[v] = du + uv, v);
-            }
-            else if(du + uv == dist[v]) add(to[v], to[u]);
-        }
-    }
-
-    FORb(i, int(orders.size())-1, 1)
-    {
-        u = orders[i];
-        from[u] = 1LL;
-        for(ii x: adj[u]) if(dist[u] + x.fi == dist[x.se])
-        {
-            add(from[u], from[x.se]);
-        }
-    }
-
-
-    FORl(i, 0, m)
-    {
-        tie(uv, u, v) = edgeList[i];
-        if(dist[u] + uv == dist[v]) add(res[i], (1LL * to[u] * from[v]) % mod);
-    }
-
-    #ifndef THEMIS
-    cout << el;
-    FORl(i, 1, orders.size()) cout << orders[i] << sp; cout << el;
-    cout << "From: "; FOR(i, 1, n) cout << from[i] << sp; cout << el;
-    cout << "To:   "; FOR(i, 1, n) cout << to[i] << sp; cout << el;
-    cout << "res:  "; for(ll x: res) print(x), pc(sp);
-    cout << el;
-    #endif
+    string p = s; reverse(whole(p));
+    if(s != p) return 0;
+    return s.find(t) != string::npos;
 }
 
-//Process
+//Subtask 1: Bruteforce
+void Subtask1()
+{
+    string tmp;
+    FOR(i, 1, m)
+    {
+        if(a[i][1] == '#') break;
+        tmp += a[i][1];
+        ok[i][1].pb(tmp);
+    }
+
+    tmp = a[1][1];
+    FOR(i, 2, n)
+    {
+        if(a[1][i] == '#') break;
+        tmp += a[1][i];
+        ok[1][i].pb(tmp);
+    }
+
+    FOR(i, 2, m) FOR(j, 2, n) if(a[i][j] != '#')
+    {
+        for(auto x: ok[i-1][j]) ok[i][j].pb(x += a[i][j]);
+        for(auto x: ok[i][j-1]) ok[i][j].pb(x += a[i][j]);
+    }
+
+    int res = 0;
+    for(auto x: ok[m][n]) if(Verify(x, src)) ++res;
+    print(res % mod);
+}
+
+
+//Subtask 234: DP
+ll calcSum(ll x, ll y, ll z, ll t)
+{
+    return (x + y + z + t) % mod;
+}
+ll Recur(int i, int j, int u, int v)
+{
+    //Out-of-bound
+    if(i > u || j > v || i > m || j > n) return 0;
+
+    //Already calculated
+    if(dp[i][j][u][v] != -1) return dp[i][j][u][v];
+
+    //Invalid case
+    if(a[i][j] != a[u][v]) return dp[i][j][u][v] = 0;
+    if(a[i][j] == '#' || a[u][v] == '#') return dp[i][j][u][v] = 0;
+
+    //Base case
+    if(i == u &&  j  == v) return dp[i][j][u][v] = 1;
+    if(i == u && j+1 == v) return dp[i][j][u][v] = 1;
+    if(j == v && i+1 == u) return dp[i][j][u][v] = 1;
+
+    return dp[i][j][u][v] = calcSum(
+            Recur(i+1, j, u, v-1),
+            Recur(i+1, j, u-1, v),
+            Recur(i, j+1, u, v-1),
+            Recur(i, j+1, u-1, v)
+    );
+}
+void Subtask234()
+{
+    ll res = Recur(1, 1, m, n);
+    FOR(i, 1, m) FOR(j, 1, n) if(a[i][j] == src[0]) a[i][j] = '#';
+    dp = vi4d(32, vi3d(32, vvi(32, vi(32, -1))));
+    ll inv = Recur(1, 1, m, n);
+
+    print((res - inv + mod) % mod);
+}
+
+//Output
 void Solve()
 {
-    FOR(i, 1, n)
-    {
-        Dijkstras(i);
-    }
-    for(ll x: res) print(x), pc(el);
+    if(m <= 10 && n <= 10) Subtask1();
+    else Subtask234();
 }
+
 
 
 //Main Procedure
