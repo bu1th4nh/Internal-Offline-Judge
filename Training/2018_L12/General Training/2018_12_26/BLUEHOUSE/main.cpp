@@ -262,8 +262,8 @@ void DFS(int u, int p)
 void getBiconnectedComp()
 {
     DFS(1, 0);
-    cerr << nBiconnected << el;
 
+//    cerr << "Nr of BCCs: " << nBiconnected << el;
 //    int iiii = 0;
 //    for(auto x: BCC)
 //    {
@@ -273,14 +273,19 @@ void getBiconnectedComp()
 //    }
 
     FOR(i, 1, n) ++idx[i];
+    FOR(i, 1, n) if(idx[i] && rev_index[idx[i]] == -1)
+    {
+        rev_index[idx[i]] = i;
+    }
+
     FOR(i, 1, n) if(!idx[i])
     {
         idx[i] = ++nBiconnected;
         rev_index[nBiconnected] = i;
     }
 
-//    FOR(i, 1, n) cerr << idx[i] << sp; cerr << el;
-
+//    cerr << "Index: "; FOR(i, 1, n) cerr << idx[i] << sp; cerr << el;
+//    cerr << "RevIndex: "; FOR(i, 1, n) cerr << rev_index[i] << sp; cerr << el;
 
 }
 
@@ -297,11 +302,20 @@ void Solve()
         }
     }
 
+//    cerr << "Edges:\n";
+//    for(ii x: edgeList) cerr << x.fi << sp << x.se << el;
+
+
     for(ii x: edgeList) ++deg[x.fi], ++deg[x.se];
     FOR(i, 1, nBiconnected) if(rev_index[i] != -1 && deg[i] == 1)
     {
         leaves.push_back(rev_index[i]);
     }
+
+
+
+//    cerr << "Nr. of leaves and leaves ID: " << leaves.size() << sp << "{ ";
+//    for(int x: leaves) cerr << x << sp; cerr << " }" << el;
 
     if(leaves.size()&1)
     {
@@ -332,6 +346,18 @@ int main()
 }
 
 /*
+6 7
+1 2
+1 3
+3 2
+2 4
+4 5
+4 6
+5 6
+
+
+
+
 16 18
 1 2
 2 3
